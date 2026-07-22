@@ -1,0 +1,241 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Highload-Analytics API v1",
+        "description": "API для сервиса управления транзакциями (Версия 1).",
+        "contact": {
+            "email": "test@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "Local Development Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/imports": {
+            "post": {
+                "tags": [
+                    "Imports"
+                ],
+                "summary": "Загрузка файла для импорта",
+                "description": "Принимает CSV или TXT файл (до 100MB), сохраняет его в S3 и ставит задачу на обработку в очередь.",
+                "operationId": "1ef8c6e75c753f27e162a02138fd1998",
+                "requestBody": {
+                    "description": "Файл для импорта (multipart/form-data)",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "Файл транзакций (только .csv или .txt, макс. 100MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Файл успешно принят в обработку",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "description": "ID импорта",
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "status": {
+                                                    "description": "Статус (pending, processing, completed, failed)",
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                },
+                                                "file_path": {
+                                                    "description": "Путь к файлу в S3",
+                                                    "type": "string",
+                                                    "example": "imports/random-name.csv"
+                                                },
+                                                "total_rows": {
+                                                    "description": "Всего строк в файле",
+                                                    "type": "integer",
+                                                    "example": 0
+                                                },
+                                                "processed_rows": {
+                                                    "description": "Количество обработанных строк",
+                                                    "type": "integer",
+                                                    "example": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации (например, неверный формат или размер файла)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "http://localhost:8080/errors/validation-error"
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 422
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Произошла одна или несколько ошибок проверки."
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": "/api/v1/imports"
+                                        },
+                                        "errors": {
+                                            "description": "Список ошибок валидации",
+                                            "type": "object",
+                                            "example": {
+                                                "file": [
+                                                    "The file field must be a file of type: csv, txt.",
+                                                    "The file field must not be greater than 102400 kilobytes."
+                                                ]
+                                            },
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/imports/{import}": {
+            "get": {
+                "tags": [
+                    "Imports"
+                ],
+                "summary": "Получение статуса импорта (Поллинг)",
+                "description": "Возвращает текущую информацию по импорту, включая прогресс обработки (processed_rows / total_rows).",
+                "operationId": "4cad14b0b1084366d2da29ac7113a2a5",
+                "parameters": [
+                    {
+                        "name": "import",
+                        "in": "path",
+                        "description": "ID импорта",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение статуса",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "processing"
+                                                },
+                                                "file_path": {
+                                                    "type": "string",
+                                                    "example": "imports/random-name.csv"
+                                                },
+                                                "total_rows": {
+                                                    "type": "integer",
+                                                    "example": 100000
+                                                },
+                                                "processed_rows": {
+                                                    "type": "integer",
+                                                    "example": 45000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Импорт не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "http://localhost:8080/errors/not-found"
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "No query results for model [App\\Models\\Import] 1."
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": "/api/v1/imports/1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Imports",
+            "description": "Imports"
+        }
+    ]
+}
