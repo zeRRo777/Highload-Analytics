@@ -100,6 +100,46 @@ services:
                 condition: service_healthy
         networks:
             - my_network
+
+    minio:
+        image: minio/minio:latest
+        container_name: app_minio
+        restart: unless-stopped
+        ports:
+            - "127.0.0.1:9000:9000" # API порт
+            - "127.0.0.1:8900:8900" # Web UI (консоль)
+        environment:
+            MINIO_ROOT_USER: ${MINIO_USER:-minioadmin}
+            MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-minioadmin}
+        command: server /data --console-address ":8900"
+        volumes:
+            - minio_data_highload_analytics:/data
+        healthcheck:
+            test:
+                ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+        networks:
+            - my_network
+
+    minio_setup:
+        image: minio/mc
+        container_name: app_minio_setup
+        depends_on:
+            minio:
+                condition: service_healthy
+        entrypoint: >
+            /bin/sh -c "
+            mc alias set myminio http://minio:9000 ${MINIO_USER:-minioadmin} ${MINIO_PASSWORD:-minioadmin};
+            mc mb myminio/${AWS_BUCKET:-highload-analytics} || true;
+            mc anonymous set public myminio/${AWS_BUCKET:-highload-analytics} || true;
+            exit 0;
+            "
+        networks:
+            - my_network
+
 volumes:
     db_data_highload_analytics:
     redis_data_highload_analytics:
+    minio_data_highload_analytics:
