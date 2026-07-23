@@ -21,6 +21,7 @@ return new class extends Migration
             $table->index('user_id');
             $table->index('transaction_date');
 
+            $table->unique(['user_id', 'transaction_date', 'amount'], 'idx_unique_transaction');
             DB::statement("CREATE INDEX idx_transactions_month ON transactions (TO_CHAR(transaction_date, 'YYYY-MM'))");
         });
     }

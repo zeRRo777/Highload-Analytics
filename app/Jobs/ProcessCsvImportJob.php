@@ -17,6 +17,7 @@ class ProcessCsvImportJob implements ShouldQueue
     use Queueable;
 
     private const CHUNK_SIZE = 1000;
+    public $tries = 3;
 
     /**
      * Create a new job instance.
@@ -76,13 +77,15 @@ class ProcessCsvImportJob implements ShouldQueue
                 ->each(function (LazyCollection $chunk) use (&$processedRows) {
                     $records = $chunk->toArray();
 
-                    Transaction::insert($records);
+                    Transaction::insertOrIgnore($records);
                     $processedRows += count($records);
 
                     $this->import->update([
                         'processed_rows' => $processedRows,
                     ]);
                 });
+
+            Storage::disk('s3')->delete($this->import->file_path);
 
             $this->import->update([
                 'status' => Status::Completed->value,
