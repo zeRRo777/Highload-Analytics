@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\Status;
+use App\Events\ImportStatusUpdated;
 use App\Models\Import;
 use App\Models\Transaction;
 use Exception;
@@ -36,6 +37,7 @@ class ProcessCsvImportJob implements ShouldQueue
         $this->import->update([
             'status' => Status::Processing->value
         ]);
+        ImportStatusUpdated::dispatch($this->import);
 
         $stream = Storage::disk('s3')->readStream($this->import->file_path);
 
@@ -43,6 +45,8 @@ class ProcessCsvImportJob implements ShouldQueue
             $this->import->update([
                 'status' => Status::Failed->value
             ]);
+
+            ImportStatusUpdated::dispatch($this->import);
 
             return;
         }
@@ -83,6 +87,8 @@ class ProcessCsvImportJob implements ShouldQueue
                     $this->import->update([
                         'processed_rows' => $processedRows,
                     ]);
+
+                    ImportStatusUpdated::dispatch($this->import);
                 });
 
             Storage::disk('s3')->delete($this->import->file_path);
@@ -92,10 +98,14 @@ class ProcessCsvImportJob implements ShouldQueue
                 'total_rows' => $totalRows,
                 'processed_rows' => $processedRows,
             ]);
+
+            ImportStatusUpdated::dispatch($this->import);
         } catch (Throwable $e) {
             $this->import->update([
                 'status' => Status::Failed->value
             ]);
+
+            ImportStatusUpdated::dispatch($this->import);
 
             throw $e;
         } finally {
