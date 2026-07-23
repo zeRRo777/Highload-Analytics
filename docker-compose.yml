@@ -138,6 +138,27 @@ services:
             "
         networks:
             - my_network
+    worker:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+            target: development
+        container_name: app_worker
+        restart: unless-stopped
+        # --sleep=3 - пауза, если нет задач
+        # --tries=3 - количество попыток перед тем как задача пометится как failed
+        command: php artisan queue:work redis --sleep=3 --tries=3
+        volumes:
+            - ./:/var/www/html
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            minio:
+                condition: service_healthy
+        networks:
+            - my_network
 
 volumes:
     db_data_highload_analytics:
