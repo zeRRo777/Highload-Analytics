@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "baa72fe798c62824d6a6466b0a42232e",
+    "content-hash": "e3756f5d6154585131e573b64aa08766",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4277,6 +4277,66 @@
                 }
             ],
             "time": "2026-06-15T07:14:32+00:00"
+        },
+        {
+            "name": "staudenmeir/laravel-cte",
+            "version": "v1.13.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/staudenmeir/laravel-cte.git",
+                "reference": "cf59f3b842e411cb22d7446ad40c92e4b5143bbe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/staudenmeir/laravel-cte/zipball/cf59f3b842e411cb22d7446ad40c92e4b5143bbe",
+                "reference": "cf59f3b842e411cb22d7446ad40c92e4b5143bbe",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^13.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "laravel/framework": "^13.0",
+                "orchestra/testbench-core": "^11.0",
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "^12.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Staudenmeir\\LaravelCte\\DatabaseServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Staudenmeir\\LaravelCte\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jonas Staudenmeir",
+                    "email": "mail@jonas-staudenmeir.de"
+                }
+            ],
+            "description": "Laravel queries with common table expressions",
+            "support": {
+                "issues": "https://github.com/staudenmeir/laravel-cte/issues",
+                "source": "https://github.com/staudenmeir/laravel-cte/tree/v1.13.0"
+            },
+            "funding": [
+                {
+                    "url": "https://paypal.me/JonasStaudenmeir",
+                    "type": "custom"
+                }
+            ],
+            "time": "2026-02-28T20:58:05+00:00"
         },
         {
             "name": "swagger-api/swagger-ui",
